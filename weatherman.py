@@ -130,7 +130,8 @@ def file_parsing_year(file_name):
 
 def file_parsing_barchart(file_name):
     
-    temp_calculation_dic={"highest_temp_month": float("-inf"), "highest_temp_on_lowest_day": float("-inf"), "lowest_temp_month": float("inf"), "lowest_temp_on_highest_day": float("inf")}
+    temp_calculation_dic={"highest_temp_month": float("-inf"), "highest_temp_on_lowest_day": float("-inf"),
+                           "lowest_temp_month": float("inf"), "lowest_temp_on_highest_day": float("inf")}
 
     start_reading = False
     total_lines = 1
@@ -187,17 +188,20 @@ def temp_calculation_year(values, coloumn_indexes_dict):
     if (values[coloumn_indexes_dict["Min TemperatureC"]] != "" and 
         int(values[coloumn_indexes_dict["Min TemperatureC"]]) < lowest_temp): 
                                                 
-        temp_tracker.update_min_temp(int(values[coloumn_indexes_dict['Min TemperatureC' ]]), values[coloumn_indexes_dict["PKT"]])
+        temp_tracker.update_min_temp(int(values[coloumn_indexes_dict['Min TemperatureC' ]]),
+                                      values[coloumn_indexes_dict["PKT"]])
 
     if(values[coloumn_indexes_dict["Max TemperatureC"]] != ""  and 
         int(values[coloumn_indexes_dict["Max TemperatureC"]]) > highest_temp):   
         
-        temp_tracker.update_max_temp( int(values[coloumn_indexes_dict["Max TemperatureC"]]), values[coloumn_indexes_dict["PKT"]]) 
+        temp_tracker.update_max_temp(int(values[coloumn_indexes_dict["Max TemperatureC"]]),
+                                      values[coloumn_indexes_dict["PKT"]]) 
 
     if(values[coloumn_indexes_dict["Max Humidity"]] != "" and 
         int(values[coloumn_indexes_dict["Max Humidity"]]) > highest_humidity):
 
-        temp_tracker.update_max_humidity(int(values[coloumn_indexes_dict["Max Humidity"]]), values[coloumn_indexes_dict["PKT"]])    
+        temp_tracker.update_max_humidity(int(values[coloumn_indexes_dict["Max Humidity"]]),
+                                          values[coloumn_indexes_dict["PKT"]])    
 
 
 
