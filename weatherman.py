@@ -115,8 +115,8 @@ def print_tempratures_bar(temprature_calculation_dict):
     for index in range (temprature_calculation_dict["highest_temprature_month"]):
          print("\033[1;31m+", end = " ",)                                                                 
 
-    print(f"\033[1;35m {temprature_calculation_dict['lowest_temprature_on_highest_day']} C - 
-          {temprature_calculation_dict['highest_temprature_month']} C")                   
+    print(f"\033[1;35m {temprature_calculation_dict['lowest_temprature_on_highest_day']} C -" 
+          "{temprature_calculation_dict['highest_temprature_month']} C")                   
 
     print("\n")
 
@@ -126,8 +126,8 @@ def print_tempratures_bar(temprature_calculation_dict):
     for index in range (temprature_calculation_dict["highest_temprature_on_lowest_day"]):
          print("\033[1;31m+", end = " ",)       
                                                                           
-    print(f"\033[1;35m {temprature_calculation_dict['lowest_temprature_month']} C - 
-          {temprature_calculation_dict['highest_temprature_on_lowest_day']} C \033[0m")
+    print(f"\033[1;35m {temprature_calculation_dict['lowest_temprature_month']} C -" 
+          "{temprature_calculation_dict['highest_temprature_on_lowest_day']} C \033[0m")
 
 
 def generate_barchart_for_file(file_name):
@@ -183,19 +183,19 @@ def temprature_calculation_year(line_read):
     if (line_read["Min TemperatureC"] != "" and 
         int(line_read["Min TemperatureC"]) < lowest_temprature): 
                                                 
-        temprature_tracker.update_min_temprature(int(line_read['Min TemperatureC' ]),
+        temprature_tracker.set_min_temprature(int(line_read['Min TemperatureC' ]),
                                       line_read["PKT"])
 
     if(line_read["Max TemperatureC"]!= ""  and 
         int(line_read["Max TemperatureC"]) > highest_temprature):   
         
-        temprature_tracker.update_max_temprature(int(line_read["Max TemperatureC"]),
+        temprature_tracker.set_max_temprature(int(line_read["Max TemperatureC"]),
                                       line_read["PKT"]) 
 
     if(line_read["Max Humidity"]!= "" and 
         int(line_read["Max Humidity"]) > highest_humidity):
 
-        temprature_tracker.update_max_humidity(int(line_read["Max Humidity"]),
+        temprature_tracker.set_max_humidity(int(line_read["Max Humidity"]),
                                           line_read["PKT"])    
 
 
