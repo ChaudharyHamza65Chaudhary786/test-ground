@@ -88,7 +88,7 @@ def generate_report_for_month_controller(file_name):
     csv_file = open_csv_file(file_name)
     weather_data = read_weather_data_from_csv(csv_file)
     total_records = len(weather_data)
-    if weather_data == 0 : 
+    if weather_data == 0: 
         print(file_name, "File Empty")
     else:
         sum_of_temperature_values = calculate_temprature_sum_for_each_record(weather_data)
