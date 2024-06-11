@@ -1,62 +1,57 @@
 import calendar
-import fnmatch
+import csv
 import os
 import sys
 
 
-class temprature_Tracker():
+class TempratureTracker():
 
     def __init__(self):
-        self.max_temp = float('-inf')
-        self.max_temp_date = ""
-        self.min_temp = float('inf')
-        self.min_temp_date = ""
+        self.max_temprature = float('-inf')
+        self.max_temprature_date = ""
+        self.min_temprature = float('inf')
+        self.min_temprature_date = ""
         self.max_humidity = float('-inf')
         self.max_humidity_date = ""
     
-    def update_max_temp(self, mx_temp, mx_date):
-        self.max_temp = mx_temp
-        self.max_temp_date = mx_date
+    def update_max_temprature(self, temprature, date):
+        self.max_temprature=  temprature
+        self.max_temprature_date = date
 
-    def update_min_temp(self, mn_temp, mn_date):
-        self.min_temp = mn_temp
-        self.min_temp_date = mn_date
+    def update_min_temprature(self, temprature, date):
+        self.min_temprature = temprature
+        self.min_temprature_date = date
     
-    def update_max_humidity(self, mx_humidity, mx_date):
-        self.max_humidity = mx_humidity
-        self.max_humidity_date = mx_date
+    def update_max_humidity(self, humidity, date):
+        self.max_humidity = humidity
+        self.max_humidity_date = date
     
     def get_max_temps(self):
-        return self.max_temp, self.min_temp, self.max_humidity
+        return self.max_temprature, self.min_temprature, self.max_humidity
 
     def print_tempratures_year(self):
-        print(f"highest temp is: {self.max_temp} C on {self.max_temp_date}")
-        print(f"lowest temp is: {self.min_temp} C on {self.min_temp_date}")
+        print(f"highest temprature is: {self.max_temprature} C on {self.max_temprature_date}")
+        print(f"lowest temprature is: {self.min_temprature} C on {self.min_temprature_date}")
         print(f"highest humidity percentage is: {self.max_humidity} % on {self.max_humidity_date}")
 
-temp_tracker = temprature_Tracker()
-        
+
+temprature_tracker = TempratureTracker()
 
 
+def open_file(file_name):
+     
+    with open(file_name) as csv_file:
+        file_data = list(csv.DictReader(csv_file, skipinitialspace = True))
+    return file_data
 
-def file_name_matching(year, month_name = None):                         
+
+def file_name_matching_month(year, month_name):                         
     
-    flag = False
+    flag = False    
 
-    if month_name:
-        for file_name in os.listdir('.'):
-            if year in file_name and month_name in file_name:
-                return file_name
-    else:        
-        for file_name in os.listdir('.'):
-            if year in file_name:
-                file_parsing_year(file_name)
-                flag = True
-        if flag:
-            temp_tracker.print_tempratures_year()
-        else:
-            return False
-        
+    for file_name in os.listdir('.'):
+        if year in file_name and month_name in file_name:
+            return file_name          
     if not flag :     
         print("NO RECORD FOUND AGAINT THIS NAME")
         return False
@@ -64,278 +59,203 @@ def file_name_matching(year, month_name = None):
 
 
 
-def file_parsing_month(file_name):
+def temprature_calculation_whole_month(line_read,sum_of_values_list): 
 
-    sum_of_values_list = [0, 0, 0]                                         
-    file_open = open(file_name,"r")
-    lines = file_open.readlines()
-    start_reading = False
-    total_lines = 1
-    
-    for line in lines:                   
-
-        if (start_reading == False and 
-           "Max TemperatureC" and "Min TemperatureC" and " Mean Humidity" in line):
-        
-               coloumn_indexes_dict = find_header_coloumns_line(total_lines, file_name)                
-               start_reading = True
-               continue
-        
-        if start_reading: 
-            values = line.strip().split(',')      
-
-            sum_of_values_list = temp_calculation_whole_month(values,sum_of_values_list,coloumn_indexes_dict)
-        
-        total_lines += 1 
-   
-    if start_reading:
-        average_values_list = find_average(sum_of_values_list, total_lines)
-        print_tempratures_month(average_values_list)
-
-    else:       
-        print(f" NO DATA FOUND IN FILE {file_name}")     
-
-    file_open.close()
-
-
-
-
-def file_parsing_year(file_name):  
-
-    start_reading = False
-    file_open = open(file_name, "r")
-    total_lines = 1
-    lines = file_open.readlines()                 
-
-    
-    for line in lines: 
-
-        if start_reading == False and "Max TemperatureC" and "Min TemperatureC" and "Max Humidity" in line:
-           
-            coloumn_indexes_dict = find_header_coloumns_line( total_lines, file_name)           
-            start_reading = True
-            continue
-
-        if start_reading: 
-            values = line.strip().split(',')   
-            temp_calculation_year(values,coloumn_indexes_dict) 
-
-
-        total_lines += 1
-            
-    file_open.close()
-    
-
-
-
-def file_parsing_barchart(file_name):
-    
-    temp_calculation_dic={"highest_temp_month": float("-inf"), "highest_temp_on_lowest_day": float("-inf"),
-                           "lowest_temp_month": float("inf"), "lowest_temp_on_highest_day": float("inf")}
-
-    start_reading = False
-    total_lines = 1
-    file_open = open(file_name, "r")
-    lines = file_open.readlines()  
- 
-    for line in lines:              
-
-        if start_reading == False and "Max TemperatureC" and "Min TemperatureC"  in line:
-
-            coloumn_indexes_dict = find_header_coloumns_line(total_lines, file_name)
-            start_reading = True          
-            continue
-              
-        if start_reading:   
-           temp_calculation_dic = temp_calculation_barchart(line,temp_calculation_dic,coloumn_indexes_dict)         
-
-           
-        total_lines += 1
-
-    print_tempratures_bar(temp_calculation_dic)
-
-
-
-
-def find_header_coloumns_line(total_lines, file_name):
-
-    file_ope = open(file_name, "r")
-    coloumn_indexes_dict = {}
-    coloums_name_list = file_ope.readlines()[total_lines-1].strip().split(',')
-
-    for i in range(len(coloums_name_list)):       
-        coloumn_indexes_dict[coloums_name_list[i]] = i
-            
-    file_ope.close()
-    return coloumn_indexes_dict
-
-
-
-def find_average(sum_of_values_list, total_number_of_values):
-     
-     for i in range (len(sum_of_values_list)):                           
-            sum_of_values_list[i] = sum_of_values_list[i] / total_number_of_values
-     
-     return sum_of_values_list
-
-
-
-
-def temp_calculation_year(values, coloumn_indexes_dict):
-
-    highest_temp, lowest_temp, highest_humidity = temp_tracker.get_max_temps()
-
-    if (values[coloumn_indexes_dict["Min TemperatureC"]] != "" and 
-        int(values[coloumn_indexes_dict["Min TemperatureC"]]) < lowest_temp): 
-                                                
-        temp_tracker.update_min_temp(int(values[coloumn_indexes_dict['Min TemperatureC' ]]),
-                                      values[coloumn_indexes_dict["PKT"]])
-
-    if(values[coloumn_indexes_dict["Max TemperatureC"]] != ""  and 
-        int(values[coloumn_indexes_dict["Max TemperatureC"]]) > highest_temp):   
-        
-        temp_tracker.update_max_temp(int(values[coloumn_indexes_dict["Max TemperatureC"]]),
-                                      values[coloumn_indexes_dict["PKT"]]) 
-
-    if(values[coloumn_indexes_dict["Max Humidity"]] != "" and 
-        int(values[coloumn_indexes_dict["Max Humidity"]]) > highest_humidity):
-
-        temp_tracker.update_max_humidity(int(values[coloumn_indexes_dict["Max Humidity"]]),
-                                          values[coloumn_indexes_dict["PKT"]])    
-
-
-
-
-def temp_calculation_whole_month(values,sum_of_values_list,coloumn_indexes_dict): 
-
-    if(values[coloumn_indexes_dict ["Max TemperatureC"]] != "" and 
-               int(values[coloumn_indexes_dict["Max TemperatureC"]].isnumeric())):
+    if(line_read["Max TemperatureC"] != ""):
                
-                sum_of_values_list[0] += int(values[coloumn_indexes_dict["Max TemperatureC"]])
+                sum_of_values_list[0] += int(line_read["Max TemperatureC"])
 
-    if(values[coloumn_indexes_dict ["Min TemperatureC"]] != "" and 
-               int(values[coloumn_indexes_dict["Min TemperatureC"]].isnumeric())):
+    if(line_read["Min TemperatureC"] != ""):
                
-                sum_of_values_list[1] += int(values[coloumn_indexes_dict["Min TemperatureC"]])
+                sum_of_values_list[1] += int(line_read["Min TemperatureC"])
 
-    if(values[coloumn_indexes_dict [" Mean Humidity"]] != "" and 
-               int(values[coloumn_indexes_dict  [" Mean Humidity"]].isnumeric())):
+    if(line_read["Mean Humidity"] != ""):
                
-                sum_of_values_list[2] += int(values[coloumn_indexes_dict[" Mean Humidity"]] )
+                sum_of_values_list[2] += int(line_read["Mean Humidity"] )
 
     return sum_of_values_list
 
 
-
-         
-def temp_calculation_barchart(line,temp_calculation_dict,coloumn_indexes_dict):
-
-    values = line.strip().split(',')  
-    
-    if(values[coloumn_indexes_dict["Max TemperatureC"]] != ""  and 
-         int(values[coloumn_indexes_dict["Max TemperatureC"]]) > temp_calculation_dict["highest_temp_month"]  ):    
-               
-            temp_calculation_dict["highest_temp_month"] = int(values[coloumn_indexes_dict["Max TemperatureC"]])
-            temp_calculation_dict["lowest_temp_on_highest_day"] = int(values[coloumn_indexes_dict["Min TemperatureC"]])
-                        
-    if(values[coloumn_indexes_dict["Min TemperatureC"]] != "" and 
-            int(values[coloumn_indexes_dict["Min TemperatureC"]]) < temp_calculation_dict["lowest_temp_month"] ):        
-                                                                    
-                temp_calculation_dict["lowest_temp_month"] = int(values[coloumn_indexes_dict["Min TemperatureC"]])
-                temp_calculation_dict["highest_temp_on_lowest_day"] = int(values[coloumn_indexes_dict["Max TemperatureC"]])    
-    
-    return temp_calculation_dict
-
-
-
-
-def print_tempratures_bar(temp_calculation_dict):  
-
-    for i in range (temp_calculation_dict["lowest_temp_on_highest_day"]):
-         print("\033[1;34m+", end = " ",)
-
-    for i in range (temp_calculation_dict["highest_temp_month"]):
-         print("\033[1;31m+", end = " ",)                                                                 
-
-    print(f"\033[1;35m {temp_calculation_dict['lowest_temp_on_highest_day']} C - {temp_calculation_dict['highest_temp_month']} C")                   
-
-    print("\n")
-
-    for i in range (temp_calculation_dict["lowest_temp_month"]):
-         print("\033[1;34m+", end = " ",)
-
-    for i in range (temp_calculation_dict["highest_temp_on_lowest_day"]):
-         print("\033[1;31m+", end = " ",)       
-                                                                          
-    print(f"\033[1;35m {temp_calculation_dict['lowest_temp_month']} C - {temp_calculation_dict['highest_temp_on_lowest_day']} C")                      
-
-
+def find_average(sum_of_values_list, total_number_of_values):
+     
+     for index in range (len(sum_of_values_list)):                           
+            sum_of_values_list[index] = sum_of_values_list[index] / total_number_of_values
+     
+     return sum_of_values_list
 
 
 def print_tempratures_month(average_values_list):
     
-    print(f"AVG Highest temp is: {average_values_list[0]} C ")
-    print(f"AVG Lowest temp is: {average_values_list[1]} C ")
+    print(f"AVG Highest temprature is: {average_values_list[0]} C ")
+    print(f"AVG Lowest temprature is: {average_values_list[1]} C ")
     print(f"AVG Mean humidity percentage is: {average_values_list[2]} %")
 
+    
+def generate_report_for_month(file_name):
+    
+    sum_of_values_list = [0, 0, 0]  
+    total_lines = 1
+    file_data = open_file(file_name)
+
+    for line_read in file_data:                   
+        sum_of_values_list = temprature_calculation_whole_month(line_read, sum_of_values_list)
+        total_lines += 1
+
+    average_values_list = find_average(sum_of_values_list, total_lines-1)
+    print_tempratures_month(average_values_list)
 
 
 
+
+def print_tempratures_bar(temprature_calculation_dict):  
+
+    for index in range (temprature_calculation_dict["lowest_temprature_on_highest_day"]):
+         print("\033[1;34m+", end = " ",)
+
+    for index in range (temprature_calculation_dict["highest_temprature_month"]):
+         print("\033[1;31m+", end = " ",)                                                                 
+
+    print(f"\033[1;35m {temprature_calculation_dict['lowest_temprature_on_highest_day']} C - 
+          {temprature_calculation_dict['highest_temprature_month']} C")                   
+
+    print("\n")
+
+    for index in range (temprature_calculation_dict["lowest_temprature_month"]):
+         print("\033[1;34m+", end = " ",)
+
+    for index in range (temprature_calculation_dict["highest_temprature_on_lowest_day"]):
+         print("\033[1;31m+", end = " ",)       
+                                                                          
+    print(f"\033[1;35m {temprature_calculation_dict['lowest_temprature_month']} C - 
+          {temprature_calculation_dict['highest_temprature_on_lowest_day']} C \033[0m")
+
+
+def generate_barchart_for_file(file_name):
+
+    temprature_calculation_dic = { 
+        "highest_temprature_month": float("-inf"),
+        "highest_temprature_on_lowest_day": float("-inf"),
+        "lowest_temprature_month": float("inf"), 
+        "lowest_temprature_on_highest_day": float("inf")
+    }
+    file_data = open_file(file_name)
+    
+    for line_read in file_data:                         
+        temprature_calculation_dic = temprature_calculation_barchart(line_read,temprature_calculation_dic)
+
+    print_tempratures_bar(temprature_calculation_dic)
+
+
+def temprature_calculation_barchart(line_read,temprature_calculation_dict):
+    
+    if(line_read["Max TemperatureC"] != ""  and 
+         int(line_read["Max TemperatureC"]) > temprature_calculation_dict["highest_temprature_month"]  ):    
+               
+            temprature_calculation_dict["highest_temprature_month"] = int(line_read["Max TemperatureC"])
+            temprature_calculation_dict["lowest_temprature_on_highest_day"] = int(line_read["Min TemperatureC"])
+                        
+    if(line_read["Min TemperatureC"] != "" and 
+            int(line_read["Min TemperatureC"]) < temprature_calculation_dict["lowest_temprature_month"] ):        
+                                                                    
+                temprature_calculation_dict["lowest_temprature_month"] = int(line_read["Min TemperatureC"])
+                temprature_calculation_dict["highest_temprature_on_lowest_day"] = int(line_read["Max TemperatureC"])    
+    
+    return temprature_calculation_dict
+
+
+
+
+def files_traversal_year(year):
+
+        flag = False 
+        for file_name in os.listdir('.'):
+            if year in file_name:
+                generate_report_year(file_name)
+                flag = True
+
+        return flag
+
+
+def temprature_calculation_year(line_read):
+
+    highest_temprature, lowest_temprature, highest_humidity = temprature_tracker.get_max_temps()
+
+    if (line_read["Min TemperatureC"] != "" and 
+        int(line_read["Min TemperatureC"]) < lowest_temprature): 
+                                                
+        temprature_tracker.update_min_temprature(int(line_read['Min TemperatureC' ]),
+                                      line_read["PKT"])
+
+    if(line_read["Max TemperatureC"]!= ""  and 
+        int(line_read["Max TemperatureC"]) > highest_temprature):   
+        
+        temprature_tracker.update_max_temprature(int(line_read["Max TemperatureC"]),
+                                      line_read["PKT"]) 
+
+    if(line_read["Max Humidity"]!= "" and 
+        int(line_read["Max Humidity"]) > highest_humidity):
+
+        temprature_tracker.update_max_humidity(int(line_read["Max Humidity"]),
+                                          line_read["PKT"])    
+
+
+def generate_report_year(file_name):  
+
+    file_data = open_file(file_name)
+    for line_read in file_data: 
+        temprature_calculation_year(line_read)      
+
+
+
+
+def validate_year_month(year, month_num):
+     
+     if year.isnumeric() and month_num.isnumeric() and int(month_num) in range (1, 13):       
+          return True
+     else:
+          return False
+
+
+def handle_cmd_arguments(cmd_argumentList, index):
+
+        values = cmd_argumentList[index+1].split('/')                
+        year = values[0] 
+        month_num = values[1]
+       
+        if "/" in cmd_argumentList[index+1] and validate_year_month(year, month_num):
+            
+            month_name = calendar.month_abbr[int(month_num)]       
+            file_name = file_name_matching_month(year, month_name) 
+
+            if file_name != False and cmd_argumentList[index] == '-a' :
+
+                generate_report_for_month(file_name)
+
+            elif file_name != False and cmd_argumentList[index] == '-c' :
+                generate_barchart_for_file(file_name)                    
+
+        else: 
+            print("INVALID Year or Month Entered")
+     
+ 
 def main():
 
-    cmd_argumentList = sys.argv[1:]                              
-    
-    for i in  range (len(cmd_argumentList)):
+    cmd_argumentList = sys.argv[1:]      
 
+    for index in  range (len(cmd_argumentList)):
 
-        if cmd_argumentList[i] == '-e':
-            print("\n")
-            year = cmd_argumentList[i+1]
-            if(file_name_matching(year) != False ):                       
-                print("\033[1;32m---------------------------------------------"
-                      "-------------------------------------\033[0m", end = "")
-            else: 
+        if cmd_argumentList[index] == '-e':
+            
+            year = cmd_argumentList[index+1]
+
+            if files_traversal_year(year) == False:                       
                 print(f" File  Not Found for year {year}")
+            else:
+                temprature_tracker.print_tempratures_year()
 
-        if cmd_argumentList[i] == '-a':            
-            if "/" in cmd_argumentList[i+1]:
-                values = cmd_argumentList[i+1].split('/')                
-                year = values[0] 
-
-                if  values[0].isnumeric() and values[1].isnumeric() and int(values[1]) in range (1,13):
-                    month_name = calendar.month_abbr[int(values[1])]       
-                    file_name = file_name_matching(year, month_name) 
-                    if file_name != False:
-                        print(f"\n\nData for {year, month_name} \n")
-                        file_parsing_month(file_name)
-                        print("\033[1;32m--------------------------------------"
-                              "--------------------------------------------\033[0m", end = "")
-                else: 
-                    print("INVALID Year or Month Entered")
-            else: 
-                print(" Invalid Input")
-
-        if cmd_argumentList[i] == '-c':
-            if "/" in cmd_argumentList[i+1]:
-                values = cmd_argumentList[i+1].split('/')               
-                year = values[0] 
-
-                if  values[0].isnumeric() and values[1].isnumeric() and int(values[1]) in range (1, 13):
-                    month_name = calendar.month_abbr[int(values[1])]       
-                    file_name = file_name_matching(year,month_name) 
-                    if file_name != False:
-                        print(f"\n\nBar Chart for {year,month_name} \n")
-                        file_parsing_barchart(file_name)
-                        print("\033[1;32m----------------------------------------------------------------------------------\033[0m", end="")
-                        print("\n")
-                else: 
-                    print("INVALID Year or Month Entered")
-            else: 
-                print(" Invalid Input")
-
-
+        if cmd_argumentList[index] == '-a' or cmd_argumentList[index] == '-c':           
+            handle_cmd_arguments(cmd_argumentList, index)            
 
 
 if __name__ == "__main__":
     main()
-    
