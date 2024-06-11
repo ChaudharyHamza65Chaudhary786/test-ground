@@ -14,15 +14,15 @@ class TempratureTracker():
         self.max_humidity = float('-inf')
         self.max_humidity_date = ""
     
-    def update_max_temprature(self, temprature, date):
+    def set_max_temprature(self, temprature, date):
         self.max_temprature=  temprature
         self.max_temprature_date = date
 
-    def update_min_temprature(self, temprature, date):
+    def set_min_temprature(self, temprature, date):
         self.min_temprature = temprature
         self.min_temprature_date = date
     
-    def update_max_humidity(self, humidity, date):
+    def set_max_humidity(self, humidity, date):
         self.max_humidity = humidity
         self.max_humidity_date = date
     
