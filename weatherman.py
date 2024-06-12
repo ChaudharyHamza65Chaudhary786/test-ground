@@ -1,10 +1,11 @@
+import argparse
 import calendar
 import csv
 import os
 import sys
 
 
-class temperatureTracker():
+class TemperatureTracker:
 
     def __init__(self):       
         self.max_temperature = float('-inf')
@@ -14,20 +15,20 @@ class temperatureTracker():
         self.max_humidity = float('-inf')
         self.max_humidity_date = ""
     
-    def set_max_temperature(self, temperature, date):
-        self.max_temperature = temperature
-        self.max_temperature_date = date
+    def track_max_temperature(self, temperature, date): 
+        if temperature != "":
+            self.max_temperature = max(self.max_temperature, int(temperature))
+            if self.max_temperature == int(temperature): self.max_temperature_date = date 
+        
+    def track_min_temperature(self, temperature, date): 
+        if temperature != "":
+            self.min_temperature = min(self.min_temperature, int(temperature))
+            if self.min_temperature == int(temperature): self.min_temperature_date = date
 
-    def set_min_temperature(self, temperature, date):
-        self.min_temperature = temperature
-        self.min_temperature_date = date
-    
-    def set_max_humidity(self, humidity, date):
-        self.max_humidity = humidity
-        self.max_humidity_date = date
-    
-    def get_max_temps(self):
-        return self.max_temperature, self.min_temperature, self.max_humidity
+    def track_max_humidity(self, humidity, date):
+        if humidity != "":
+            self.max_humidity = max(self.max_humidity, int(humidity))
+            if self.max_humidity == int(humidity): self.max_humidity_date = date
 
     def print_temperatures_year(self):
         print(f"highest temperature is: {self.max_temperature} C on {self.max_temperature_date}")
@@ -35,154 +36,174 @@ class temperatureTracker():
         print(f"highest humidity percentage is: {self.max_humidity} % on {self.max_humidity_date}")
 
 
-temperature_tracker = temperatureTracker()
+class WeatherFilesHandler:
 
+    def __open_csv_file(self, file_name):    
+        csv_file = open(file_name) 
+        return csv_file
 
-def open_csv_file(file_name):    
-    csv_file = open(file_name) 
-    return csv_file
-
-
-def read_weather_data_from_csv(csv_file):
-    weather_data = list(csv.DictReader(csv_file, skipinitialspace=True))
-    if len(weather_data) == 0:
-        return False
-    return weather_data
-
-
-def match_file_name(year, month_name):                            
-    flag = False    
-    for file_name in os.listdir('.'):
-        if year in file_name and month_name in file_name:
-            return file_name          
-    if not flag:     
-        print("NO RECORD FOUND AGAINT THIS NAME")
-        return False
-
-
-def extract_int_value(value): return int(value) if value != "" else 0
-
-
-def calculate_temprature_sum_for_each_record(weather_data): 
-    sum_of_temperature_values = {"max_temperature": 0, "min_temperature": 0, "mean_humidity": 0}   
-    for line_read in weather_data:                                    
-            sum_of_temperature_values["max_temperature"] += extract_int_value(line_read["Max TemperatureC"])            
-            sum_of_temperature_values["min_temperature"] += extract_int_value(line_read["Min TemperatureC"])
-            sum_of_temperature_values["mean_humidity"] += extract_int_value(line_read["Mean Humidity"] )
-    return  sum_of_temperature_values
-
-
-def calculate_average(sum_of_temperature_values, total_number_of_values):    
-    for key in sum_of_temperature_values:                           
-        sum_of_temperature_values[key] = sum_of_temperature_values[key] / total_number_of_values
-    return sum_of_temperature_values
-
-
-def print_temperatures_month(average_values):
-    print(f"AVG Maximum temperature is: {average_values['max_temperature']} C ")
-    print(f"AVG Minimum temperature is: {average_values['min_temperature']} C ")
-    print(f"AVG Mean humidity percentage is: {average_values['mean_humidity']} %")
-
+    def __read_weather_data_from_csv(self, csv_file, file_name):
+        weather_data = list(csv.DictReader(csv_file, skipinitialspace=True))
+        if len(weather_data) != 0: return weather_data
+        print(f"No Record Found against file : {file_name}")
     
-def generate_report_for_month_controller(file_name):   
-    csv_file = open_csv_file(file_name)
-    weather_data = read_weather_data_from_csv(csv_file)
-    total_records = len(weather_data)
-    if weather_data == 0: 
-        print(file_name, "File Empty")
-    else:
-        sum_of_temperature_values = calculate_temprature_sum_for_each_record(weather_data)
-        average_values = calculate_average(sum_of_temperature_values, total_records)
-        print_temperatures_month(average_values)
+    def return_weather_data(self, file_name):
+        csv_file = self.__open_csv_file(file_name)
+        weather_data = self.__read_weather_data_from_csv(csv_file, file_name)
+        return weather_data
+
+    def return_all_file_names_list_for_year(self, year):
+        file_names=[]
+        flag = False
+        for file_name in os.listdir('.'):
+            if year in file_name:
+                file_names.append(file_name)
+                flag = True
+        return file_names if flag else 0
+    
+    @staticmethod
+    def match_and_return_file_name(year, month_name):      
+        flag = False    
+        for file_name in os.listdir('.'):
+            if year in file_name and month_name in file_name:
+                return file_name          
+        if not flag:     
+            print("NO RECORD FOUND AGAINT THIS NAME")
+            return False
 
 
-def print_temperatures_bar_for_each_record(weather_data):
-    for line_read in weather_data:                       
+class WeatherDataCalculator:
 
-        if line_read["Min TemperatureC"] != "":  
-            for index in range (int(line_read["Min TemperatureC"])):
-                print("\033[1;34m+", end = " ",)
+    def __calculate_average(self, sum_of_temperature_values, total_number_of_values):    
+        for key in sum_of_temperature_values:                           
+            sum_of_temperature_values[key] = sum_of_temperature_values[key] / total_number_of_values
+        return sum_of_temperature_values
 
-        if line_read["Max TemperatureC"] != "":
-            for index in range (int(line_read["Max TemperatureC"])):
-                print("\033[1;31m+", end = " ",)                                                     
+    def __extract_int_value(self, value):
+        return int(value) if value != "" else 0
+    
+    def __calculate_temprature_sum_for_each_record(self, weather_data, sum_of_temperature_values, key): 
+        for line_read in weather_data:                                    
+                sum_of_temperature_values[key] += self.__extract_int_value(line_read[key])            
+        return  sum_of_temperature_values[key]
+    
+    def calculate_temperature_sum_and_return_average(self, weather_data):
+        sum_of_temperature_values = {"Max TemperatureC": 0, "Min TemperatureC": 0, "Mean Humidity": 0}   
+        total_records = len(weather_data)
+        for key in sum_of_temperature_values:  
+            sum_of_temperature_values[key] = self.__calculate_temprature_sum_for_each_record(weather_data, sum_of_temperature_values, key)
+        average_values = self.__calculate_average(sum_of_temperature_values, total_records)
+    
+        return average_values
+    
 
-            print(f"\033[1;35m {line_read['Min TemperatureC']} C -"
-                f"{line_read['Max TemperatureC']} C")
+class ReportPrinter:
+
+    def print_average_temperatures_month(self, average_values):
+        print(f"AVG Maximum temperature is: {average_values['Max TemperatureC']} C ")
+        print(f"AVG Minimum temperature is: {average_values['Min TemperatureC']} C ")
+        print(f"AVG Mean humidity percentage is: {average_values['Mean Humidity']} %")
+
+    def print_temperatures_bar_for_each_record(self, weather_data):        
+        for line_read in weather_data:                       
+            if line_read["Min TemperatureC"] != "":  
+                for index in range (int(line_read["Min TemperatureC"])):
+                    print("\033[1;34m+", end = " ",)
+
+            if line_read["Max TemperatureC"] != "":
+                for index in range (int(line_read["Max TemperatureC"])):
+                    print("\033[1;31m+", end = " ",)                                                     
+
+                print(f"\033[1;35m {line_read['Min TemperatureC']} C -"
+                    f"{line_read['Max TemperatureC']} C")
 
 
-def generate_barchart_for_file_controller(file_name):
-    csv_file = open_csv_file(file_name)
-    weather_data = read_weather_data_from_csv(csv_file)   
-    if weather_data == 0:
-        print(file_name, "File Empty")
-    else:
-        print_temperatures_bar_for_each_record(weather_data)
+class ReportGenerator:
+    
+    temperature_tracker = TemperatureTracker()
+    weather_files_handler = WeatherFilesHandler()
+    weather_data_calculator = WeatherDataCalculator()
+    report_printer = ReportPrinter()
 
+    def generate_report_for_month_controller(self, file_name):
+        weather_data = self.weather_files_handler.return_weather_data(file_name)
+        if  weather_data: 
+            average_values = self.weather_data_calculator.calculate_temperature_sum_and_return_average(weather_data)
+            self.report_printer.print_average_temperatures_month(average_values)
 
-def traverse_files_of_same_year(year):
-    flag = False 
-    for file_name in os.listdir('.'):
-        if year in file_name:
-            generate_report_year_controller(file_name)
-            flag = True
-    return flag
-
-
-def update_yearly_temperature(line_read):
-    highest_temperature, lowest_temperature, highest_humidity = temperature_tracker.get_max_temps()   
-    if(line_read["Min TemperatureC"] != "" and int(line_read["Min TemperatureC"]) < lowest_temperature):        
-        temperature_tracker.set_min_temperature(int(line_read['Min TemperatureC' ]), line_read["PKT"])
-
-    if(line_read["Max TemperatureC"] != ""  and int(line_read["Max TemperatureC"]) > highest_temperature): 
-        temperature_tracker.set_max_temperature(int(line_read["Max TemperatureC"]), line_read["PKT"]) 
-        
-    if(line_read["Max Humidity"] != "" and int(line_read["Max Humidity"]) > highest_humidity):
-        temperature_tracker.set_max_humidity(int(line_read["Max Humidity"]), line_read["PKT"])    
-
-
-def generate_report_year_controller(file_name):  
-    csv_file = open_csv_file(file_name)
-    weather_data = read_weather_data_from_csv(csv_file)
-    if weather_data == 0:
-        print(file_name, "File Empty")
-    else:
+    def generate_barchart_for_file_controller(self, file_name):
+        weather_data = self.weather_files_handler.return_weather_data(file_name)
+        if weather_data:
+            self.report_printer.print_temperatures_bar_for_each_record(weather_data)
+    
+    def track_tempratures(self,weather_data):
         for line_read in weather_data: 
-            update_yearly_temperature(line_read)      
+            self.temperature_tracker.track_min_temperature(line_read["Min TemperatureC"], line_read["PKT"])
+            self.temperature_tracker.track_max_temperature(line_read["Max TemperatureC"], line_read["PKT"])
+            self.temperature_tracker.track_max_humidity(line_read["Max Humidity"], line_read["PKT"])
+
+    def generate_report_for_year_controller(self, year):
+        files_name_list = self.weather_files_handler.return_all_file_names_list_for_year(year)
+        for file_name in files_name_list:
+             weather_data = self.weather_files_handler.return_weather_data(file_name)
+             if weather_data:
+                self.track_tempratures(weather_data)                
+        self.temperature_tracker.print_temperatures_year()
 
 
-def validate_year_month(year, month_num): return year.isnumeric() and month_num.isnumeric() and int(month_num) in range (1, 13)
+class CmdArgumentsHandler():
 
+    report_generator = ReportGenerator()
 
-def handle_cmd_arguments(cmd_argumentList, index):
-        cmd_argument = cmd_argumentList[index+1].split('/')                
-        year = cmd_argument[0] 
-        month_num = cmd_argument[1]
+    def validate_year_month(self, year, month_num): 
+        return year.isnumeric() and month_num.isnumeric() and int(month_num) in range (1, 13)
+    
+    def handle_cmd_argument_year(self, year):
+        self.report_generator.generate_report_for_year_controller(year)
 
-        if "/" in cmd_argumentList[index+1] and validate_year_month(year, month_num):           
-            month_name = calendar.month_abbr[int(month_num)]       
-            file_name = match_file_name(year, month_name) 
+    def get_year_and_month_from_arguments(self, cmd_argument):
+        input = cmd_argument.split('/')                
+        input_dict = {"year": input[0], 
+                      "month": input[1]}
+        return input_dict
+    
+    def handle_cmd_arguments(self, cmd_argument, key):    
+        input_dict = self.get_year_and_month_from_arguments(cmd_argument)
+        if self.validate_year_month(input_dict["year"], input_dict["month"]): 
 
-            if file_name != False and cmd_argumentList[index] == '-a' :
-                generate_report_for_month_controller(file_name)
+            input_dict["month"] = calendar.month_abbr[int(input_dict["month"])]       
+            file_name = WeatherFilesHandler.match_and_return_file_name(input_dict["year"], input_dict["month"])    
 
-            elif file_name != False and cmd_argumentList[index] == '-c' :
-                generate_barchart_for_file_controller(file_name)              
+            if file_name and key == 'a' :
+                self.report_generator.generate_report_for_month_controller(file_name)
+
+            elif file_name and key == 'c' :
+                self.report_generator.generate_barchart_for_file_controller(file_name)              
         else: 
             print("INVALID Year or Month Entered")
 
 
 def main():
-    cmd_argumentList = sys.argv[1:]      
-    for index in  range (len(cmd_argumentList)):
-        if cmd_argumentList[index] == '-e':            
-            year = cmd_argumentList[index+1]
-            if traverse_files_of_same_year(year) == False:                       
-                print(f" File  Not Found for year {year}")
-            else:
-                temperature_tracker.print_temperatures_year()
-        if cmd_argumentList[index] == '-a' or cmd_argumentList[index] == '-c':           
-            handle_cmd_arguments(cmd_argumentList, index)            
+
+    cmd_handler = CmdArgumentsHandler()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', help="To print Report for year")
+    parser.add_argument('-a', help="To print AVG Report ")
+    parser.add_argument('-c', help="To print Barchart Report")
+    args = parser.parse_args()
+
+    input_e = args.e
+    input_a = args.a
+    input_c = args.c
+
+    if input_e : 
+        cmd_handler.handle_cmd_argument_year(input_e)
+   
+    if input_a :
+        cmd_handler.handle_cmd_arguments(input_a, "a")
+    
+    if input_c : 
+        cmd_handler.handle_cmd_arguments(input_c, "c")
 
 
 if __name__ == "__main__":
