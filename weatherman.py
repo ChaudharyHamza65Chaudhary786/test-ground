@@ -2,8 +2,6 @@ import argparse
 import calendar
 import csv
 import os
-import sys
-
 
 class TemperatureTracker:
 
