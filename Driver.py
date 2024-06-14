@@ -14,6 +14,7 @@ class Driver:
 
         """
         Input validation for year and month
+
         
         Args:
             year : year for which all files should be read
@@ -23,7 +24,15 @@ class Driver:
             True if all conditions are satisfie else False
 
         """
-        return year.isnumeric() and month_num.isnumeric() and int(month_num) in range (0, 13)
+
+        try:
+            calendar.month_abbr[int(month_num)]
+            flag = True
+        except:
+            print("INVALID Year or Month Entered")
+            flag = False
+
+        return year.isnumeric() and month_num.isnumeric() and flag
     
     def parse_year_and_month_from_arguments(self, cmd_argument):
         
@@ -50,15 +59,13 @@ class Driver:
         Returns:
             The filename corresponding to the provided year and month, if valid. Otherwise, returns None.
         """
-
-        year,month = self.parse_year_and_month_from_arguments(cmd_args)
+        file_name = None
+        year, month = self.parse_year_and_month_from_arguments(cmd_args)
         if self.validate_year_month(year, month): 
             month = calendar.month_abbr[int(month)]       
-            file_name = self.weather_file_handler.match_and_extract_file_name(year, month)   
-            return file_name   
-        else:
-            print("INVALID Year or Month Entered")
-            return False
+            file_name = self.weather_file_handler.match_and_extract_file_name(year, month)      
+            
+        return file_name
         
     
     def handle_cmd_arguments(self, cmd_args):
@@ -76,7 +83,7 @@ class Driver:
 
         """
        
-        if cmd_args.e : 
+        if cmd_args.e: 
             files_name = self.weather_file_handler.match_and_extract_file_name(cmd_args.e)
             if files_name:
                 self.report_generator.generate_report_for_year_handler(files_name)
