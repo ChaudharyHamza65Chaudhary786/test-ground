@@ -58,7 +58,7 @@ class ReportGenerator:
         for file_name in files_name:
             weather_readings.extend(self.weather_files_handler.extract_weather_readings(file_name))
   
-        max_temp = self.weather_readings_calculator.calculate_max_readings(weather_readings,"Max TemperatureC")
-        min_temp = self.weather_readings_calculator.calculate_min_temperatures_yearly(weather_readings,"Min TemperatureC")
+        max_temperature = self.weather_readings_calculator.calculate_max_readings(weather_readings,"Max TemperatureC")
+        min_temperature = self.weather_readings_calculator.calculate_min_temperatures_yearly(weather_readings,"Min TemperatureC")
         max_humidity = self.weather_readings_calculator.calculate_max_readings(weather_readings,"Max Humidity")
-        self.weather_report_printer.print_temperatures_year(max_temp,min_temp,max_humidity)
+        self.weather_report_printer.print_temperatures_year(max_temperature,min_temperature,max_humidity)
