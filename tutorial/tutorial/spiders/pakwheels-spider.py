@@ -21,7 +21,7 @@ class UsedCarsSpider(scrapy.Spider):
 
         next_page = response.css('ul.pagination.search-pagi li.next_page a::attr(href)').get()
         if next_page:
-            print(next_page)
+            print("page ******************************************************************************************************* : ",next_page)
             yield response.follow(next_page, callback=self.parse)
 
 
@@ -63,8 +63,10 @@ class UsedCarsSpider(scrapy.Spider):
         print(seller_name)
 
     def get_image_src(self, response):
-        image_src = response.css(".gallery img::attr(src)").get()
+        image_src = response.css(".gallery li img::attr(src)").getall()
         print(image_src)
+        
+
 
     def get_vehicle_description(self, response):
         description_li_elements = response.css('ul.list-unstyled.ul-featured.clearfix li')
