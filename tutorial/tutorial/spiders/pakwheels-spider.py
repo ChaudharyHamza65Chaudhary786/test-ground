@@ -95,8 +95,7 @@ class PakwheelsUsedCarsSpider(CrawlSpider):
 
         }      
         self.ad_descriptions.append(vehicle_ad_description)
-
-        
+    
     def write_ad_description_to_json(self, ad_description):
         with open("Pakwheels_Used_Cars_ad.json","w") as pakwheels_json:
             json.dump(ad_description, pakwheels_json, indent=4)
