@@ -1,4 +1,5 @@
 import json
+import scrapy
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
@@ -27,7 +28,7 @@ class PakwheelsUsedCarsSpider(CrawlSpider):
         return title
 
     def get_vehicle_price(self, response):
-        price = response.css("strong.generic-green::text").get()
+        price = response.css("strong.generic-green::text").get()    
         return price
 
     def get_model_year(self, response):
@@ -95,14 +96,13 @@ class PakwheelsUsedCarsSpider(CrawlSpider):
             'vehicle_information' : self.get_vehicle_information(response),
             'vehicle_features' : self.get_vehicle_features(response),
             'vehicle_images_src' : self.get_image_src(response)
-
         }      
         self.ad_descriptions.append(vehicle_ad_description)
     
-    def write_ad_description_to_json(self, ad_description):
+    def write_ad_description_to_json(self):
         with open("Pakwheels_Used_Cars_ad.json","w") as pakwheels_json:
-            json.dump(ad_description, pakwheels_json, indent=4)
+            json.dump(self.ad_descriptions, pakwheels_json, indent=4)
 
-    def close(self, Spider, reason: str):
+    def close(self, reason: str):
         self.write_ad_description_to_json()
         super().close(reason)
