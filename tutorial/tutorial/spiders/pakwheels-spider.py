@@ -11,7 +11,7 @@ class PakwheelsUsedCarsSpider(CrawlSpider):
     ]
 
     rules = (
-         Rule(LinkExtractor(allow=r"https://www.pakwheels.com/used-cars/search/-/\?page=\d+"), callback="parse", follow=True),
+         Rule(LinkExtractor(allow=r"https://www.pakwheels.com/used-cars/search/-/\?page=\d+", restrict_css="li.next_page a"), callback="parse", follow=True),
     )
 
     def parse(self, response):
