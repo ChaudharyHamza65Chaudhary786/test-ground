@@ -57,7 +57,7 @@ class PakwheelsUsedCarsSpider(CrawlSpider):
         return seller_name
 
     def get_vehicle_features(self, response):
-        return [li.css('::text').get().strip() for li in response.css('ul.list-unstyled.car-feature-list.nomargin li')]
+        return [list_item.css('::text').get().strip() for list_item in response.css('ul.list-unstyled.car-feature-list.nomargin li')]
     
     def get_vehicle_information(self, response):
         description_dict = {}
@@ -81,5 +81,4 @@ class PakwheelsUsedCarsSpider(CrawlSpider):
             'vehicle_information' : self.get_vehicle_information(response),
             'vehicle_features' : self.get_vehicle_features(response),
             'vehicle_images_src' : self.get_image_src(response)
-        }      
- 
+        }
