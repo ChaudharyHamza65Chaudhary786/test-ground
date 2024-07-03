@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib import admin
 from django.db import models
 
@@ -5,7 +6,7 @@ from django.db import models
 from users.models import User
 
 
-class CarManufacturer(models.Model):
+class Manufacturer(models.Model):
     car_make = models.CharField(max_length=50)
 
 
@@ -13,15 +14,15 @@ class CarModel(models.Model):
     car_model = models.CharField(max_length=150)
 
 
-class CarFeatures(models.Model):
+class Features(models.Model):
     feature = models.CharField(max_length=200)
 
 
-class CarImages(models.Model):
-    image = models.ImageField(upload_to="images")
+class Images(models.Model):
+    image = models.URLField()
 
 
-class CarDetails(models.Model):
+class Details(models.Model):
     fuel_choices = [
         ('Petrol', 'Petrol'),
         ('Diesel', 'Diesel'),
@@ -36,8 +37,8 @@ class CarDetails(models.Model):
     ]
     title = models.CharField(max_length=100)
     model = models.ForeignKey(CarModel, on_delete=models.CASCADE)
-    car_make = models.ForeignKey(CarManufacturer, on_delete=models.CASCADE)
-    features = models.ManyToManyField(CarFeatures)
+    car_make = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
+    features = models.ManyToManyField(Features)
     body_type = models.CharField(max_length=50)
     price = models.CharField(max_length=20, null=True)
     year = models.IntegerField(null=True)
@@ -48,7 +49,7 @@ class CarDetails(models.Model):
     color = models.CharField(max_length=50, null=True)
     assembly = models.CharField(max_length=50, choices=assembly_choices, null=True)
     engine_capacity = models.CharField(max_length=50, null=True)
-    images = models.ManyToManyField(CarImages, blank=True)
+    images = models.ManyToManyField(Images, blank=True)
     chasis_num = models.CharField(max_length=50, blank=True, null=True)
     auction_num = models.CharField(max_length=50, blank=True, null=True)
     ad_created = models.DateTimeField(auto_now_add=True)

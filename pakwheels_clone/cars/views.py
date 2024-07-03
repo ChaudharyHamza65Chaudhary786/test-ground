@@ -1,6 +1,6 @@
 from django.views.generic import   ListView, DetailView
 
-from .models  import CarDetails
+from .models  import Details as CarDetails
 
 
 class CarsListView(ListView):

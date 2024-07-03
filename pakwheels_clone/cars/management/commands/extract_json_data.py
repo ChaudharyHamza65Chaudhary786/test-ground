@@ -4,7 +4,7 @@ import json
 from django.core.management.base import BaseCommand, CommandError
 
 
-from cars.models import CarDetails, CarModel, CarManufacturer, CarFeatures, CarImages
+from cars.models import Details, CarModel, Manufacturer, Features, Images
 from users.models import User
 
 
@@ -15,18 +15,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         json_file = kwargs['json_file']
-        file = open(json_file,'r')
+        file = open(json_file, 'r')
         used_car_data = json.load(file)
         for car_listed in used_car_data:
           self.setup_car_details(car_listed)
 
     def setup_car_details(self, car_listed):
         model, _ = CarModel.objects.get_or_create(car_model=car_listed['vehicle_model'])
-        manufacturer, _ = CarManufacturer.objects.get_or_create(car_make=car_listed['vehicle_manufacturer'])
-        user, _ = User.objects.get_or_create(name=car_listed['seller_name'])
+        manufacturer, _ = Manufacturer.objects.get_or_create(car_make=car_listed['vehicle_manufacturer'])
+        user, _ = User.objects.get_or_create(username=car_listed['seller_name'])
         vehicle_information = car_listed['vehicle_information']
 
-        car = CarDetails.objects.create(
+        car = Details.objects.create(
             model=model, 
             car_make=manufacturer,
             seller=user,
@@ -50,10 +50,10 @@ class Command(BaseCommand):
 
     def add_features(self, car, car_listed):
          for feature in car_listed['vehicle_features']:
-            featur, _ = CarFeatures.objects.get_or_create(feature=feature)
+            featur, _ = Features.objects.get_or_create(feature=feature)
             car.features.add(featur)
 
     def add_images(self, car, car_listed):
         for image_src in car_listed['vehicle_images_src']:
-            img, _ = CarImages.objects.get_or_create(image=image_src)
+            img, _ = Images.objects.get_or_create(image=image_src)
             car.images.add(img)
