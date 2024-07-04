@@ -1,7 +1,7 @@
+import factory.random
 import factory.faker
 
 from factory.django import DjangoModelFactory
-import factory.random
 from faker import Faker
 from faker_vehicle import VehicleProvider
 
