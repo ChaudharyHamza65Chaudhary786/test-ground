@@ -53,8 +53,8 @@ class Details(models.Model):
     ad_last_updated = models.DateTimeField(auto_now=True)
 
     car_make = models.ForeignKey("Manufacturer", on_delete=models.CASCADE)
-    model = models.ForeignKey(CarModel, on_delete=models.CASCADE)
-    seller = models.ForeignKey(User,on_delete=models.CASCADE)
+    model = models.ForeignKey("CarModel", on_delete=models.CASCADE)
+    seller = models.ForeignKey("users.User", on_delete=models.CASCADE)
 
     year = models.IntegerField(null=True)
 
