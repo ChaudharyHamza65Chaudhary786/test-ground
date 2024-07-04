@@ -2,3 +2,7 @@
 db.sqlite3
 pakwheels_ads.json
 used_cars_with_make_model.json
+*.json
+*.pyc
+__pycache__/
+settings.py

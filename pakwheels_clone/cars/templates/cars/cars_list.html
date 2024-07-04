@@ -10,7 +10,7 @@
             {% if car.images.all %}
             <ul>
               {% for image in car.images.all %}
-                    <img src="{{ image.image }}" alt="Car Image" style="width:200px;height:auto;">
+                    <img src="{{ image.image.url}}" alt="Car Image" style="width:200px;height:auto;">
               {% endfor %}
             </ul>
             {%endif%}
