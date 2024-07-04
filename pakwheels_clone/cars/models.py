@@ -64,4 +64,3 @@ class Details(models.Model):
     def save(self, *args, **kwargs):
         self.title = f"{self.car_make} {self.model} {self.year}"
         super().save(*args, **kwargs)
-
