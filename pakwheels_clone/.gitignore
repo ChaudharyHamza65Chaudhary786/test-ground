@@ -6,3 +6,4 @@ used_cars_with_make_model.json
 *.pyc
 __pycache__/
 settings.py
+images/
